@@ -1,89 +1,103 @@
 "use client";
-import {
-  FINAL_STRETCH_MOCK,
-  MIGRATED_MOCK,
-  NEW_PAIRS_MOCK,
-} from "@/lib/mock/tokens";
+import { useEffect, useState, useMemo, memo, useCallback } from "react";
+import { pulseState, subscribe } from "@/lib/mock/stream";
+import { PulseToken } from "./types";
+import { setSort } from "@/store/pulseSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
 import Row from "./Row";
-import { Box, Button, Flex, Heading, Separator } from "@radix-ui/themes";
-import { PulseColumnConfig } from "./types";
-import { useState } from "react";
+import { SortFilter, SortConfig } from "@/components/shared/SortFilter";
+import TokenDetailModal from "./TokenDetailModal";
+import SkeletonRow from "@/components/shared/SkeletonRow";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { MultiColumnView } from "../ui/MultiColumnView";
+import BuyModal from "@/components/shared/BuyModal";
 
-function Column() {
-  const [activeTab, setActiveTab] = useState("new");
-  const PULSE_COLUMN: PulseColumnConfig[] = [
+const Column = memo(function Column() {
+  const [pulseData, setPulseData] = useState<pulseState | null>(null);
+
+  const dispatch = useDispatch();
+  // Read the full sorts map from Redux
+  const sorts = useSelector((state: RootState) => state.pulse.sorts);
+
+  const handleSortChange = useCallback((columnId: string, newConfig: SortConfig) => {
+    dispatch(setSort({ columnId, key: newConfig.key, direction: newConfig.direction }));
+  }, [dispatch]);
+
+  useEffect(() => {
+    const unsubscribe = subscribe(setPulseData);
+    return () => unsubscribe();
+  }, [])
+
+  // Helper to sort tokens based on a specific config
+  const sortTokens = useCallback((tokens: PulseToken[], config: { key: string, direction: 'asc' | 'desc' } | undefined) => {
+    if (!config) return tokens;
+
+    return [...tokens].sort((a, b) => {
+      const aValue = a[config.key as keyof PulseToken];
+      const bValue = b[config.key as keyof PulseToken];
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return config.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      return 0;
+    });
+  }, []);
+
+  const sortOptions = useMemo(() => [
+    { label: "Market Cap", key: "marketCap" },
+    { label: "Liquidity", key: "liquidity" },
+    { label: "Volume", key: "volume" },
+    { label: "Age", key: "ageSeconds" },
+    { label: "Transactions", key: "txCount" },
+    { label: "Holders", key: "holders" },
+    { label: "Pro Traders", key: "proTraders" },
+  ], []);
+
+  const columnsData = useMemo(() => [
     {
       key: "new",
       title: "New Pairs",
-      data: NEW_PAIRS_MOCK,
+      data: pulseData ? sortTokens(pulseData.newPairs, sorts['new']) : []
     },
     {
       key: "final",
       title: "Final Stretch",
-      data: FINAL_STRETCH_MOCK,
+      data: pulseData ? sortTokens(pulseData.finalStretch, sorts['final']) : []
     },
     {
       key: "migrated",
       title: "Migrated",
-      data: MIGRATED_MOCK,
+      data: pulseData ? sortTokens(pulseData.migrated, sorts['migrated']) : []
     },
-  ];
+  ], [pulseData, sortTokens, sorts]);
+
+  const columns = useMemo(() => columnsData.map(col => ({
+    ...col,
+    headerAction: sorts[col.key] ? (
+      <SortFilter
+        activeSort={{ key: sorts[col.key].key as SortConfig['key'], direction: sorts[col.key].direction }}
+        onSortChange={(newConfig) => handleSortChange(col.key, newConfig)}
+        options={sortOptions}
+      />
+    ) : null
+  })), [columnsData, sorts, handleSortChange, sortOptions]);
+
   return (
     <>
-      {/* Mobile: Tabs */}
-      <div className="block lg:hidden p-4">
-        <Flex direction="row" gap="2" mb="4" wrap="wrap">
-          {PULSE_COLUMN.map((column) => (
-            <Button
-              key={column.key}
-              variant={activeTab === column.key ? "solid" : "outline"}
-              onClick={() => setActiveTab(column.key)}
-            >
-              {column.title}
-            </Button>
-          ))}
-        </Flex>
-        {PULSE_COLUMN.map((column) => (
-          activeTab === column.key && (
-            <div key={column.key}>
-              <Heading size="4" mb="2" trim="start">
-                {column.title}
-              </Heading>
-              <Separator my="3" size="4" />
-              <Flex direction="column" gap="3">
-                <div className="overflow-y-auto max-h-[70vh] custom-scrollbar">
-                  {column.data.map((token) => (
-                    <Row key={token.id} token={token} />
-                  ))}
-                </div>
-              </Flex>
-            </div>
-          )
-        ))}
-      </div>
-      {/* Desktop: Side by side */}
-      <div className="hidden lg:block w-full h-[calc(100vh-140px)] overflow-hidden">
-        <div className="grid grid-cols-3 gap-4 h-full pr-1 pb-1">
-          {PULSE_COLUMN.map((column) => (
-            <Flex key={column.key} direction="column" className="h-full overflow-hidden border border-gray-800/30 rounded-xl bg-gray-950/20 p-4">
-              <Box mb="4" flex-shrink="0">
-                <Heading size="4" mb="2" trim="start">
-                  {column.title}
-                </Heading>
-                <Separator size="4" />
-              </Box>
-              <div className="overflow-y-auto h-full pr-3 custom-scrollbar">
-                <Flex direction="column" gap="3">
-                  {column.data.map((token) => (
-                    <Row key={token.id} token={token} />
-                  ))}
-                </Flex>
-              </div>
-            </Flex>
-          ))}
-        </div>
-      </div>
+      <ErrorBoundary>
+        <MultiColumnView
+          columns={columns}
+          renderItem={(token: PulseToken) => <Row token={token} />}
+          isLoading={!pulseData}
+          renderSkeleton={() => <SkeletonRow />}
+          skeletonCount={6}
+        />
+        <TokenDetailModal />
+        <BuyModal />
+      </ErrorBoundary>
     </>
   );
-}
+});
+
 export default Column;

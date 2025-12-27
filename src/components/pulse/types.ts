@@ -2,7 +2,7 @@ export type PulseToken = {
   id: string
   name: string
   symbol: string
-  image: string
+  imageUrl: string
   ageSeconds: number
   marketCap: number
   liquidity: number
@@ -10,7 +10,8 @@ export type PulseToken = {
   txCount: number
   holders: number
   proTraders: number
-  migrations: string
+  migrations: number
+  description: string
 }
 
 export type PulseColumnConfig = {

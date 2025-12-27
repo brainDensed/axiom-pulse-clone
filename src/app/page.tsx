@@ -1,10 +1,11 @@
 import NewPairs from "@/components/pulse";
-import { Button, Text } from "@radix-ui/themes";
+
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
   return (
-    <div>
+    <main>
       <NewPairs />
-    </div>
+    </main>
   );
 }
