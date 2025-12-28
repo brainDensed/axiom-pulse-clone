@@ -19,7 +19,7 @@ export default function BuyModal() {
     if (!isOpen) return null;
 
     const handleBuy = () => {
-        // Implement buy logic here (e.g., call API or smart contract)
+
         console.log(`Buying ${amount} SOL of ${token?.symbol}`);
         dispatch(closeBuyModal());
         setAmount("");

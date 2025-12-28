@@ -38,7 +38,6 @@ export function subscribe(listener: Listener) {
 
     return () => {
         listeners = listeners.filter(l => l !== listener);
-        // Optional: terminate worker if no listeners? Probably keep it alive for single page app feel.
     }
 }
 

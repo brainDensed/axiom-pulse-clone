@@ -15,7 +15,6 @@ const state: pulseState = {
     migrated: MIGRATED_MOCK,
 }
 
-// Initial emission
 self.postMessage(state);
 
 setInterval(() => {
@@ -24,4 +23,4 @@ setInterval(() => {
     state.migrated = updateTokens(state.migrated);
 
     self.postMessage(state);
-}, 5000); // Keep 5s interval for now, or faster if needed
+}, 5000);

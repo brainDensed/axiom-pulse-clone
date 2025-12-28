@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo, memo, useCallback } from "react";
+import { useEffect, useState, useMemo, memo, useCallback, startTransition } from "react";
 import { pulseState, subscribe } from "@/lib/mock/stream";
 import { PulseToken } from "./types";
 import { setSort } from "@/store/pulseSlice";
@@ -17,7 +17,7 @@ const Column = memo(function Column() {
   const [pulseData, setPulseData] = useState<pulseState | null>(null);
 
   const dispatch = useDispatch();
-  // Read the full sorts map from Redux
+
   const sorts = useSelector((state: RootState) => state.pulse.sorts);
 
   const handleSortChange = useCallback((columnId: string, newConfig: SortConfig) => {
@@ -25,11 +25,15 @@ const Column = memo(function Column() {
   }, [dispatch]);
 
   useEffect(() => {
-    const unsubscribe = subscribe(setPulseData);
+    const unsubscribe = subscribe((data) => {
+      startTransition(() => {
+        setPulseData(data);
+      });
+    });
     return () => unsubscribe();
   }, [])
 
-  // Helper to sort tokens based on a specific config
+
   const sortTokens = useCallback((tokens: PulseToken[], config: { key: string, direction: 'asc' | 'desc' } | undefined) => {
     if (!config) return tokens;
 

@@ -1,6 +1,15 @@
 import * as React from "react";
 import { NavigationMenu } from "radix-ui";
-import { HomeIcon, BarChartIcon, ActivityLogIcon, ReaderIcon, TargetIcon, EyeOpenIcon, PieChartIcon, StarIcon } from "@radix-ui/react-icons";
+import {
+  HomeIcon,
+  BarChartIcon,
+  ActivityLogIcon,
+  ReaderIcon,
+  TargetIcon,
+  EyeOpenIcon,
+  PieChartIcon,
+  StarIcon,
+} from "@radix-ui/react-icons";
 import { Text, Flex } from "@radix-ui/themes";
 
 const navItems = [
@@ -17,7 +26,6 @@ const navItems = [
 const Navbar = () => {
   return (
     <>
-      {/* Desktop Navigation */}
       <div className="hidden md:flex fixed top-6 left-1/2 -translate-x-1/2 z-50">
         <NavigationMenu.Root className="relative flex justify-center">
           <NavigationMenu.List className="center m-0 flex list-none rounded-full bg-black/50 backdrop-blur-xl border border-white/10 px-6 py-3 shadow-2xl gap-2">
@@ -35,7 +43,6 @@ const Navbar = () => {
         </NavigationMenu.Root>
       </div>
 
-      {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/80 border-t border-white/10">
         <Flex
           className="w-full overflow-x-auto no-scrollbar py-2 px-4"
@@ -49,7 +56,9 @@ const Navbar = () => {
               className="flex flex-col items-center gap-1 min-w-[60px] opacity-70 active:opacity-100 flex-shrink-0"
             >
               {item.icon && <item.icon width="20" height="20" />}
-              <Text size="1" weight="medium">{item.title}</Text>
+              <Text size="1" weight="medium">
+                {item.title}
+              </Text>
             </a>
           ))}
         </Flex>

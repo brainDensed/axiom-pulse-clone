@@ -9,7 +9,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/store";
 import { closeModal, openBuyModal } from "@/store/pulseSlice";
 
-// Reuse helper function
 const getAge = (seconds: number) => Math.floor(seconds / 60);
 
 interface Stat {
