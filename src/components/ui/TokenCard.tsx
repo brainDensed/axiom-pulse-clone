@@ -1,7 +1,6 @@
 "use client";
 import React, { memo } from "react";
-import { Box, Flex, Grid, Text, IconButton, Theme } from "@radix-ui/themes";
-import { LightningBoltIcon } from "@radix-ui/react-icons";
+import { Box, Flex, Grid, Text, IconButton } from "@radix-ui/themes";
 import { useDirectFlash } from "@/hooks/useDirectFlash";
 
 export interface TokenStat {

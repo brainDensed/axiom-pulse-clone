@@ -13,7 +13,7 @@ export default function BuyModal() {
     const idToFetch = activeTokenId || "";
     const isOpen = !!activeTokenId;
 
-    const { data: token, isLoading } = useTokenDetails(idToFetch, undefined);
+    const { data: token } = useTokenDetails(idToFetch, undefined);
     const [amount, setAmount] = useState("");
 
     if (!isOpen) return null;
